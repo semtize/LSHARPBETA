@@ -17,6 +17,7 @@ namespace Mid_or_Feed.Champions
         public Spell E;
         public Spell Q;
         public Spell W;
+		public Spell R;
 
         public Ahri()
         {

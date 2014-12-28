@@ -10,6 +10,8 @@ namespace Mid_or_Feed
 {
     internal class Program
     {
+		public static Helper Helper;
+		
         private static void Main(string[] args)
         {
             CustomEvents.Game.OnGameLoad += Game_OnGameLoad;
@@ -19,7 +21,10 @@ namespace Mid_or_Feed
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
             var plugin = Type.GetType("Mid_or_Feed.Champions." + ObjectManager.Player.ChampionName);
-
+			
+			Helper = new Helper();
+            new Ahri();
+			
             if (plugin == null)
             {
                 Plugin.PrintChat(ObjectManager.Player.ChampionName + " not supported!");
