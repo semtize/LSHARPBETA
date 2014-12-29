@@ -24,7 +24,7 @@ namespace Mid_or_Feed.Champions
             Q = new Spell(SpellSlot.Q, 1000);
             W = new Spell(SpellSlot.W, 800);
             E = new Spell(SpellSlot.E, 1000);
-			R = new Spell(Spellshot.R,1000);
+			R = new Spell(SpellSlot.R,1000);
 
             Q.SetSkillshot(0.25f, 100, 2500, false, SkillshotType.SkillshotLine);
             E.SetSkillshot(0.25f, 60, 1500, true, SkillshotType.SkillshotLine);
@@ -127,7 +127,7 @@ namespace Mid_or_Feed.Champions
 
             E.Cast(target, Packets);
 			
-			            if (!GetBool("useEHarass") || !E.IsReady())
+			if (!GetBool("useEHarass") || !E.IsReady())
                 return;
 
             E.Cast(target, Packets);
@@ -140,7 +140,7 @@ namespace Mid_or_Feed.Champions
 
             Vector3 mousePos = Game.CursorPos;
 
-            var enemiesNearMouse = Program.Helper.EnemyTeam.Where(x => x.Distance(ObjectManager.Player) < _spellR.Range && x.Distance(mousePos) < 650);
+            var enemiesNearMouse = Program.Helper.EnemyTeam.Where(x => x.Distance(ObjectManager.Player) < R.Range && x.Distance(mousePos) < 650);
 
             if (enemiesNearMouse.Count() > 0)
             {
@@ -149,7 +149,7 @@ namespace Mid_or_Feed.Champions
 
                 bool enoughMana = ObjectManager.Player.Mana > ObjectManager.Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + ObjectManager.Player.Spellbook.GetSpell(SpellSlot.E).ManaCost + ObjectManager.Player.Spellbook.GetSpell(SpellSlot.R).ManaCost;
 
-                if (_menu.Item("comboROnlyUserInitiate").GetValue<bool>() || !(_spellQ.IsReady() && _spellE.IsReady()) || !enoughMana) //dont initiate if user doesnt want to, also dont initiate if Q and E isnt ready or not enough mana for QER combo
+                if (!GetBool("comboROnlyUserInitiate") || !(Q.IsReady() && E.IsReady()) || !enoughMana) //dont initiate if user doesnt want to, also dont initiate if Q and E isnt ready or not enough mana for QER combo
                     return false;
 
                 var friendsNearMouse = Program.Helper.OwnTeam.Where(x => x.IsMe || x.Distance(mousePos) < 650); //me and friends near mouse (already in fight)
