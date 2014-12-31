@@ -272,18 +272,6 @@ namespace Veigar
                 if (farmLocation.MinionsHit >= Config.SliderLinks["waveNumW"].Value.Value)
                     W.Cast(farmLocation.Position);
             }
-			
-			if (Config.BoolLinks["waveQhit"].Value && Q.IsReady())
-            {
-                // Get a target that would die with Q and won't die while the projectile is still flying
-                var target = MinionManager.GetMinions(Q.Range, MinionTypes.All, MinionTeam.Enemy, MinionOrderTypes.MaxHealth)
-                    .FirstOrDefault(m => m.Health < Q.GetRealDamage(m) &&
-                    HealthPrediction.GetHealthPrediction(m, (int)(player.Distance(m, false) / Q.Speed), (int)(Q.Delay * 1000 + Game.Ping / 2)) > 0);
-                
-                if (target != null)
-                    Q.Cast(target);
-            }
-			
         }
 
         public static void OnJungleClear()
@@ -307,6 +295,7 @@ namespace Veigar
                     W.Cast(farmLocation.Position);
             }
         }
+
 
         public static void OnFlee()
         {
