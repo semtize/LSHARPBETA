@@ -84,6 +84,7 @@ namespace Veigar
             ProcessLink("waveNumW", subMenu.AddLinkedSlider("Minion hit number for W", 3, 1, 10));
             ProcessLink("waveMana", subMenu.AddLinkedSlider("Mana usage in percent (%)", 30));
             ProcessLink("waveActive", subMenu.AddLinkedKeyBind("WaveClear active", 'V', KeyBindType.Press));
+			ProcessLink("waveQhit", subMenu.AddLinkedKeyBind("Last hit Q", 'A', KeyBindType.Toggle));
 
             // JungleClear
             subMenu = _menu.MainMenu.AddSubMenu("JungleClear");
@@ -99,21 +100,6 @@ namespace Veigar
             // Items
             subMenu = _menu.MainMenu.AddSubMenu("Items");
             ProcessLink("itemsDfg", subMenu.AddLinkedBool("Use Deathfire Grasp"));
-
-			// Misc
-            subMenu = _menu.MainMenu.AddSubMenu("Misc");
-			ProcessLink("waveQhit", subMenu.AddLinkedKeyBind("Last hit Q", 'A', KeyBindType.Toggle));
-			
-			if (Config.BoolLinks["waveQhit"].Value && Q.IsReady())
-            {
-                // Get a target that would die with Q and won't die while the projectile is still flying
-                var target = MinionManager.GetMinions(Q.Range, MinionTypes.All, MinionTeam.Enemy, MinionOrderTypes.MaxHealth)
-                    .FirstOrDefault(m => m.Health < Q.GetRealDamage(m) &&
-                    HealthPrediction.GetHealthPrediction(m, (int)(player.Distance(m, false) / Q.Speed), (int)(Q.Delay * 1000 + Game.Ping / 2)) > 0);
-                
-                if (target != null)
-                    Q.Cast(target);
-            }
 
             // Drawings
             subMenu = _menu.MainMenu.AddSubMenu("Drawings");
