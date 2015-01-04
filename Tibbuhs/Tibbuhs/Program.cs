@@ -55,9 +55,10 @@ namespace Tibbuhs
             if (SpellSlot.Summoner2.ToString().ToLower().Contains("dot")) Ignite = SpellSlot.Summoner2;
             if (SpellSlot.Summoner2.ToString().ToLower().Contains("exhaust")) Exhaust = SpellSlot.Summoner2;
              */
-            Flash = ObjectManager.Player.Spellbook.CastSpell(FlashSlot.SpellSlot);
-            Ignite = ObjectManager.Player.Spellbook.CastSpell(IgniteSlot.SpellSlot);
-            Exhaust = ObjectManager.Player.Spellbook.CastSpell(ExhaustSlot.SpellSlot);
+
+            Flash = Player.GetSpellSlot("summonerflash");
+            Ignite = Player.GetSpellSlot("SummonerDot");
+            Exhaust = Player.GetSpellSlot("SummonerExhaust");
             SpellList.Add(Q); SpellList.Add(W); SpellList.Add(E); SpellList.Add(R);
             DFG = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ? new Items.Item(3188, 750) : new Items.Item(3128, 750);
          ZHONYA = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ? new Items.Item(3090, float.MaxValue) : new Items.Item(3157, float.MaxValue);
@@ -326,7 +327,7 @@ namespace Tibbuhs
         #region Passive
         private static bool PassiveStacker()
         {
-            if(Utility.InFountain())
+            if(ObjectManager.Player.InFountain())
             {
                 if (GetPassiveStacks() < 4)
                 {
