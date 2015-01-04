@@ -55,12 +55,12 @@ namespace Tibbuhs
             if (SpellSlot.Summoner2.ToString().ToLower().Contains("dot")) Ignite = SpellSlot.Summoner2;
             if (SpellSlot.Summoner2.ToString().ToLower().Contains("exhaust")) Exhaust = SpellSlot.Summoner2;
              */
-            Flash = Player.GetSpellSlot("SummonerFlash", true);
-            Ignite = Player.GetSpellSlot("SummonerDot", true);
-            Exhaust = Player.GetSpellSlot("SummonerExhaust", true);
+            Flash = ObjectManager.Player.GetSpellSlot("SummonerFlash", true);
+            Ignite = ObjectManager.Player.GetSpellSlot("SummonerDot", true);
+            Exhaust = ObjectManager.Player.GetSpellSlot("SummonerExhaust", true);
             SpellList.Add(Q); SpellList.Add(W); SpellList.Add(E); SpellList.Add(R);
             DFG = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ? new Items.Item(3188, 750) : new Items.Item(3128, 750);
-            ZHONYA = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ? new Items.Item(3090, float.MaxValue) : new Items.Item(3157, float.MaxValue);
+         ZHONYA = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ? new Items.Item(3090, float.MaxValue) : new Items.Item(3157, float.MaxValue);
             #endregion
 
             #region Menu
