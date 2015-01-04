@@ -95,7 +95,7 @@ namespace Tibbuhs
 
         private void OnGameUpdate(EventArgs args)
         {
-            if (ObjectManager.Player.HasBuff("Recall") || ObjectManager.Player.InFountain() && ObjectManager.Player.InShopRange())
+            if (ObjectManager.Player.HasBuff("Recall") || ObjectManager.Player.InFountain())
                 return;
 
             try
