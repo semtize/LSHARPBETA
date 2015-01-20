@@ -219,8 +219,6 @@ namespace KarthusSharp
                 LastHit();
 
             if (_menu.Item("harassQ").GetValue<bool>())
-				var prediction = _spellQ.GetPrediction(target);
-				if (prediction.Hitchance >= HitChance.High)
                 CastQ(TargetSelector.GetTarget(_spellQ.Range, TargetSelector.DamageType.Magical), _menu.Item("harassQPercent").GetValue<Slider>().Value);
         }
 
