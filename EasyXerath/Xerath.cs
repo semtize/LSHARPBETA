@@ -187,7 +187,7 @@ public class Xerath : Champion
             Q.StartCharging();
         else
         {
-            if (Q.GetPrediction(target).Hitchance = HitChance.Medium)
+            if (Q.GetPrediction(target).Hitchance >= HitChance.Low)
                 Q.Cast(target, IsPacketCastEnabled());
             else
             {
