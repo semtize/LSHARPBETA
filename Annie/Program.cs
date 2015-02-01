@@ -309,7 +309,7 @@ namespace Annie
             return totalComboDamage;
         }
 
-		private static void FlashCombo()
+		public static void FlashCombo()
         {
             var UseFlashCombo = Config.Item("FlashComboKey").GetValue<KeyBind>().Active;
             var FlashComboMinEnemies = Config.Item("FlashComboMinEnemies").GetValue<Slider>().Value;
@@ -341,7 +341,7 @@ namespace Annie
                             E.Cast();
                         }
 
-                        summonerSpellManager.CastFlash(predict);
+                        ObjectManager.Player.Spellbook.CastSpell(FlashSlot, predict);
 
                         if (R.IsReady())
                             R.Cast(predict);
