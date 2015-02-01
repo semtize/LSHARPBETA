@@ -80,12 +80,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-   <ItemGroup>
-    <ProjectReference Include="..\DevCommom\DevCommom.csproj">
-      <Project>{d7913d32-bc5c-4a9b-84aa-a8018057e6f7}</Project>
-      <Name>DevCommom</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
