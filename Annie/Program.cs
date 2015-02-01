@@ -177,12 +177,12 @@ namespace Annie
 		private static float GetComboDamage(Obj_AI_Hero enemy)
 			{
 		            IEnumerable<SpellSlot> spellCombo = new[] { SpellSlot.Q, SpellSlot.W };
-            if (GetPassiveStacks() >= 4)
+            if (StunCount >= 4)
                 spellCombo = spellCombo.Concat(new[] { SpellSlot.Q });
             if (R.IsReady())
                 spellCombo = spellCombo.Concat(new[] { SpellSlot.R });
 
-            return (float)Player.GetComboDamage(enemy, spellCombo);
+            return (float)ObjectManager.Player.GetComboDamage(enemy, spellCombo);
 			}
 			
         private static void OnDraw(EventArgs args)
