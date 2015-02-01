@@ -102,11 +102,7 @@ namespace Annie
             Config.SubMenu("combo").AddItem(new MenuItem("rCombo", "Use R")).SetValue(true);
             Config.SubMenu("combo").AddItem(new MenuItem("itemsCombo", "Use Items")).SetValue(true);
             Config.SubMenu("combo").AddItem(new MenuItem("flashCombo", "Targets needed to Flash -> R(stun)")).SetValue(new Slider(4, 5, 1));
-			
-			Config.AddSubMenu(new Menu("Flash Combo", "FlashCombo"));
-            Config.SubMenu("FlashCombo").AddItem(new MenuItem("FlashComboKey", "FlashCombo!").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
-            Config.SubMenu("FlashCombo").AddItem(new MenuItem("FlashComboMinEnemies", "FlashCombo Min Enemies Hit").SetValue(new Slider(2, 1, 5)));
-            Config.SubMenu("FlashCombo").AddItem(new MenuItem("FlashAntiSuicide", "Use Flash Anti Suicide").SetValue(true));
+			Config.SubMenu("combo").AddItem(new MenuItem("FlashComboKey", "FlashCombo!").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
 
             Config.AddSubMenu(new Menu("Harass(Mixed Mode) settings", "harass"));
             Config.SubMenu("harass")
@@ -295,70 +291,10 @@ namespace Annie
                 W.Cast(target, Config.Item("PCast").GetValue<bool>());
             }
         }
-
-		private static double GetBurstComboDamage(Obj_AI_Hero target)
-        {
-            double totalComboDamage = 0;
-            totalComboDamage += ObjectManager.Player.GetSpellDamage(target, SpellSlot.R);
-            totalComboDamage += ObjectManager.Player.GetSpellDamage(target, SpellSlot.Q);
-            totalComboDamage += ObjectManager.Player.GetSpellDamage(target, SpellSlot.W);
-
-            if (ObjectManager.Player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
-                totalComboDamage += ObjectManager.Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
-
-            return totalComboDamage;
-        }
-
-		public static void FlashCombo()
-        {
-            var UseFlashCombo = Config.Item("FlashComboKey").GetValue<KeyBind>().Active;
-            var FlashComboMinEnemies = Config.Item("FlashComboMinEnemies").GetValue<Slider>().Value;
-            var FlashAntiSuicide = Config.Item("FlashAntiSuicide").GetValue<bool>();
-
-            if (!UseFlashCombo)
-                return;
-				
-            if (((StunCount == 3 && E.IsReady()) || StunCount == 4) && (ObjectManager.Player.Spellbook.CanUseSpell(FlashSlot) == SpellState.Ready) && R.IsReady())
-            {
-                var allEnemies = DevHelper.GetEnemyList()
-                    .Where(x => ObjectManager.Player.Distance(x) > R.Range && ObjectManager.Player.Distance(x) < R.Range + 500);
-
-                var enemies = DevHelper.GetEnemyList()
-                    .Where(x => ObjectManager.Player.Distance(x) > R.Range && ObjectManager.Player.Distance(x) < R.Range + 400 && GetBurstComboDamage(x) * 0.9 > x.Health)
-                    .OrderBy(x => x.Health);
-
-                bool isSuicide = FlashAntiSuicide ? allEnemies.Count() - enemies.Count() > 2 : false;
-
-                if (enemies.Any() && !isSuicide)
-                { 
-                    var enemy = enemies.First();
-                    if (DevHelper.CountEnemyInPositionRange(enemy.ServerPosition, 250) >= FlashComboMinEnemies)
-                    {
-                        var predict = R.GetPrediction(enemy, true).CastPosition;
-
-                        if (StunCount == 3)
-                        {
-                            E.Cast();
-                        }
-
-                        ObjectManager.Player.Spellbook.CastSpell(FlashSlot, predict);
-
-                        if (R.IsReady())
-                            R.Cast(predict);
-
-                        if (W.IsReady())
-                            W.Cast(predict);
-
-                        if (E.IsReady())
-                            E.Cast();
-
-                    }
-                }
-            }
-        }
 		
         private static void Combo(Obj_AI_Base target, Obj_AI_Base flashRtarget)
         {
+			 var UseFlashCombo = Config.Item("FlashComboKey").GetValue<KeyBind>().Active;
             if ((target == null && flashRtarget == null) || Environment.TickCount < DoingCombo ||
                 (!Q.IsReady() && !W.IsReady() && !R.IsReady()))
             {
@@ -405,7 +341,7 @@ namespace Annie
 
                     break;
                 case 4:
-                    if (ObjectManager.Player.Spellbook.CanUseSpell(FlashSlot) == SpellState.Ready && R.IsReady() &&
+                    if (ObjectManager.Player.Spellbook.CanUseSpell(FlashSlot) == SpellState.Ready && R.IsReady() && !UseFlashCombo &&
                         target == null)
                     {
                         var position = R1.GetPrediction(flashRtarget, true).CastPosition;
@@ -417,7 +353,6 @@ namespace Annie
                             ObjectManager.Player.Spellbook.CastSpell(FlashSlot, position);
                         }
 
-                        Items.UseItem(3128, flashRtarget);
                         R.Cast(flashRtarget, false, true);
 
                         if (W.IsReady() && useW)
@@ -439,7 +374,8 @@ namespace Annie
 
                         if (W.IsReady() && useW)
                         {
-                            W.Cast(target, false, true);
+							W.CastIfHitchanceEquals(target, target.IsMoving ? HitChance.High : HitChance.Medium);
+                            //W.Cast(target, false, true);
                         }
 
                         if (Q.IsReady() && useQ)
@@ -457,7 +393,7 @@ namespace Annie
                     if (W.IsReady() && useW)
                     {
                         W.CastIfHitchanceEquals(target, target.IsMoving ? HitChance.High : HitChance.Medium);
-						W.Cast(target, false, true);
+						//W.Cast(target, false, true);
                     }
 
                     break;
@@ -516,139 +452,6 @@ namespace Annie
                 ObjectManager.Get<Obj_AI_Hero>()
                     .Where(hero => hero.Team != ObjectManager.Player.Team)
                     .Count(hero => Vector3.Distance(pos, hero.ServerPosition) <= range);
-        }
-    }
-	public static class DevHelper
-    {
-
-        public static List<Obj_AI_Hero> GetEnemyList()
-        {
-            return ObjectManager.Get<Obj_AI_Hero>()
-                .Where(x => x.IsEnemy && x.IsValid)
-                .OrderBy(x => ObjectManager.Player.ServerPosition.Distance(x.ServerPosition))
-                .ToList();
-        }
-
-        public static List<Obj_AI_Hero> GetAllyList()
-        {
-            return ObjectManager.Get<Obj_AI_Hero>()
-                .Where(x => x.IsAlly && x.IsValid)
-                .OrderBy(x => ObjectManager.Player.ServerPosition.Distance(x.ServerPosition))
-                .ToList();
-        }
-
-        public static Obj_AI_Hero GetNearestEnemy(this Obj_AI_Base unit)
-        {
-            return ObjectManager.Get<Obj_AI_Hero>()
-                .Where(x => x.IsEnemy && x.IsValid && x.NetworkId != unit.NetworkId)
-                .OrderBy(x => unit.ServerPosition.Distance(x.ServerPosition))
-                .FirstOrDefault();
-        }
-
-        public static Obj_AI_Hero GetNearestAlly(this Obj_AI_Base unit)
-        {
-            return ObjectManager.Get<Obj_AI_Hero>()
-                .Where(x => x.IsAlly && x.IsValid && x.NetworkId != unit.NetworkId)
-                .OrderBy(x => unit.ServerPosition.Distance(x.ServerPosition))
-                .FirstOrDefault();
-        }
-
-        public static Obj_AI_Hero GetNearestEnemyFromUnit(this Obj_AI_Base unit)
-        {
-            return ObjectManager.Get<Obj_AI_Hero>()
-                .Where(x => x.IsEnemy && x.IsValid)
-                .OrderBy(x => unit.ServerPosition.Distance(x.ServerPosition))
-                .FirstOrDefault();
-        }
-
-        public static float GetHealthPerc(this Obj_AI_Base unit)
-        {
-            return (unit.Health / unit.MaxHealth) * 100;
-        }
-
-        public static float GetManaPerc(this Obj_AI_Base unit)
-        {
-            return (unit.Mana / unit.MaxMana) * 100;
-        }
-
-        public static void SendMovePacket(this Obj_AI_Base v, Vector2 point)
-        {
-            Packet.C2S.Move.Encoded(new Packet.C2S.Move.Struct(point.X, point.Y)).Send();
-        }
-
-        public static bool IsUnderEnemyTurret(this Obj_AI_Base unit)
-        {
-            IEnumerable<Obj_AI_Turret> query;
-
-            if (unit.IsEnemy)
-            {
-                query = ObjectManager.Get<Obj_AI_Turret>()
-                    .Where(x => x.IsAlly && x.IsValid && !x.IsDead && unit.ServerPosition.Distance(x.ServerPosition) < 950);
-            }
-            else
-            {
-                query = ObjectManager.Get<Obj_AI_Turret>()
-                    .Where(x => x.IsEnemy && x.IsValid && !x.IsDead && unit.ServerPosition.Distance(x.ServerPosition) < 950);
-            }
-
-            return query.Any();
-        }
-
-        public static void Ping(Vector3 pos)
-        {
-            Packet.S2C.Ping.Encoded(new Packet.S2C.Ping.Struct(pos.X, pos.Y, 0, 0, Packet.PingType.Normal)).Process();
-        }
-
-        public static float GetDistanceSqr(Obj_AI_Base source, Obj_AI_Base target)
-        {
-            return Vector2.DistanceSquared(source.ServerPosition.To2D(), target.ServerPosition.To2D());
-        }
-
-        //public static bool IsFacing(this Obj_AI_Base source, Obj_AI_Base target)
-        //{
-        //    if (!source.IsValid || !target.IsValid)
-        //        return false;
-
-        //    if (source.Path.Count() > 0 && source.Path[0].Distance(target.ServerPosition) < target.Distance(source))
-        //        return true;
-        //    else
-        //        return false;
-        //}
-
-        public static bool IsKillable(this Obj_AI_Hero source, Obj_AI_Base target, IEnumerable<SpellSlot> spellCombo)
-        {
-            return Damage.GetComboDamage(source, target, spellCombo) * 0.9 > target.Health;
-        }
-
-        public static int CountEnemyInPositionRange(Vector3 position, float range)
-        {
-            return GetEnemyList().Where(x => x.ServerPosition.Distance(position) <= range).Count();
-        }
-
-        private static readonly string[] AttackResets = { "dariusnoxiantacticsonh", "fioraflurry", "garenq", "hecarimrapidslash", "jaxempowertwo", "jaycehypercharge", "leonashieldofdaybreak", "luciane", "lucianq", "monkeykingdoubleattack", "mordekaisermaceofspades", "nasusq", "nautiluspiercinggaze", "netherblade", "parley", "poppydevastatingblow", "powerfist", "renektonpreexecute", "rengarq", "shyvanadoubleattack", "sivirw", "takedown", "talonnoxiandiplomacy", "trundletrollsmash", "vaynetumble", "vie", "volibearq", "xenzhaocombotarget", "yorickspectral" };
-        private static readonly string[] NoAttacks = { "jarvanivcataclysmattack", "monkeykingdoubleattack", "shyvanadoubleattack", "shyvanadoubleattackdragon", "zyragraspingplantattack", "zyragraspingplantattack2", "zyragraspingplantattackfire", "zyragraspingplantattack2fire" };
-        private static readonly string[] Attacks = { "caitlynheadshotmissile", "frostarrow", "garenslash2", "kennenmegaproc", "lucianpassiveattack", "masteryidoublestrike", "quinnwenhanced", "renektonexecute", "renektonsuperexecute", "rengarnewpassivebuffdash", "trundleq", "xenzhaothrust", "viktorqbuff", "xenzhaothrust2", "xenzhaothrust3" };
-
-        public static bool IsAutoAttack(string spellName)
-        {
-            return (spellName.ToLower().Contains("attack") && !NoAttacks.Contains(spellName.ToLower())) || Attacks.Contains(spellName.ToLower());
-        }
-
-        public static bool IsMinion(AttackableUnit unit, bool includeWards = false)
-        {
-            if (unit is Obj_AI_Minion)
-            {
-                var minion = unit as Obj_AI_Minion;
-                var name = minion.BaseSkinName.ToLower();
-                return name.Contains("minion") || (includeWards && (name.Contains("ward") || name.Contains("trinket")));
-            }
-            else
-                return false;
-        }
-
-        public static float GetRealDistance(GameObject unit, GameObject target)
-        {
-            return unit.Position.Distance(target.Position) + unit.BoundingRadius + target.BoundingRadius;
         }
     }
 }
