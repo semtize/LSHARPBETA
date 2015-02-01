@@ -108,9 +108,6 @@ namespace Annie
             Config.SubMenu("combo").AddItem(new MenuItem("flashCombo", "Targets needed to Flash -> R(stun)")).SetValue(new Slider(4, 5, 1));
 			Config.SubMenu("combo").AddItem(new MenuItem("FlashComboKey", "FlashCombo!").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
 			
-			Config.AddSubMenu(new Menu("Flash Combo", "FlashCombo"));
-            Config.SubMenu("FlashCombo").AddItem(new MenuItem("FlashTibbersmin", "FlashCombo Min Enemies Hit").SetValue(new Slider(2, 1, 5)));
-            Config.SubMenu("FlashCombo").AddItem(new MenuItem("FlashTibbers", "Use Flash Tibbers").SetValue(true));
 
             Config.AddSubMenu(new Menu("Harass(Mixed Mode) settings", "harass"));
             Config.SubMenu("harass")
@@ -131,6 +128,7 @@ namespace Annie
             Config.SubMenu("misc").AddItem(new MenuItem("suppMode", "Support mode").SetValue(false));
             Config.SubMenu("misc").AddItem(new MenuItem("FountainPassive", "Charge Stun in Fountain").SetValue(true));
             Config.SubMenu("misc").AddItem(new MenuItem("LanePassive", "Charge Stun In Lane").SetValue(true));
+			Congig.SubMenu("misc").AddItem(new MenuItem("AntiGapcloser", "Anti-Gapcloser").SetValue(true));
             Config.SubMenu("misc")
                 .AddItem(new MenuItem("LanePassivePercent", "Min Mana % to Charge").SetValue(new Slider(60)));
 
@@ -418,23 +416,6 @@ namespace Annie
             }
         }
 
-		private static void FlashCombo(Obj_AI_Base target)
-		{
-		 if (Config.Item("FlashTibbers").GetValue<bool>())
-            {
-                FlashTibbers_pi.Aoe = true; FlashTibbers_pi.Collision = false; FlashTibbers_pi.Delay = 250; FlashTibbers_pi.Range = 1000; FlashTibbers_pi.Speed = float.MaxValue; FlashTibbers_pi.Type = SkillshotType.SkillshotCircle; FlashTibbers_pi.Radius = 100;
-                FlashTibbers_po = Prediction.GetPrediction(FlashTibbers_pi);
-                var flashtibbers_hitcount = FlashTibbers_po.AoeTargetsHitCount;
-                var flashtibbers_hitchance = FlashTibbers_po.Hitchance;
-                PredictedTibbers = FlashTibbers_po.UnitPosition;
-                if (StunCount == 4 && flashtibbers_hitcount > Config.Item("FlashTibbersmin").GetValue<int>() && flashtibbers_hitchance >= HitChance.High && ObjectManager.Player.Distance(FlashTibbers_po.UnitPosition) > R.Range)
-                {
-                    ObjectManager.Player.Spellbook.CastSpell(FlashSlot, PredictedTibbers);
-                    R.Cast(PredictedTibbers);
-                }
-            }
-            var minTargets = Config.Item("flashtibbersmin").GetValue<int>();
-		}
 		
         private static void Farm(bool laneclear)
         {
