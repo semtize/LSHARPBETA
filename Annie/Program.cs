@@ -166,24 +166,23 @@ namespace Annie
 
             Game.PrintChat("Annie# Loaded");
 			
-			Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
-                Utility.HpBarDamageIndicator.Enabled = dmgAfterComboItem.GetValue<bool>();
-                dmgAfterComboItem.ValueChanged += delegate(object sender, OnValueChangeEventArgs eventArgs)
-                {
-                    Utility.HpBarDamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
-                };
-
+			Config.Item("ComboDamage").ValueChanged += (object sender, OnValueChangeEventArgs e) => { Utility.HpBarDamageIndicator.Enabled = e.GetNewValue<bool>(); };
+            if (Config.Item("ComboDamage").GetValue<bool>())
+            {
+                Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
+                Utility.HpBarDamageIndicator.Enabled = true;
             }
         }
 				
 		private static float GetComboDamage(Obj_AI_Hero enemy)
 			{
-			var fComboDamage = 0f;
-            fComboDamage += Q.IsReady() ? (float) ObjectManager.Player.GetSpellDamage(enemy, SpellSlot.Q) : 0;
-            fComboDamage += W.IsReady() ? (float) ObjectManager.Player.GetSpellDamage(enemy, SpellSlot.W) : 0;
-            fComboDamage += R.IsReady() ? (float) ObjectManager.Player.GetSpellDamage(enemy, SpellSlot.R) : 0; 
-			fComboDamage += IgniteSlot != SpellSlot.Unknown && ObjectManager.Player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready ? (float) ObjectManager.Player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite) : 0f;			
-            return (float) fComboDamage;
+		            IEnumerable<SpellSlot> spellCombo = new[] { SpellSlot.Q, SpellSlot.W };
+            if (GetPassiveStacks() >= 4)
+                spellCombo = spellCombo.Concat(new[] { SpellSlot.Q });
+            if (R.IsReady())
+                spellCombo = spellCombo.Concat(new[] { SpellSlot.R });
+
+            return (float)Player.GetComboDamage(enemy, spellCombo);
 			}
 			
         private static void OnDraw(EventArgs args)
@@ -317,8 +316,6 @@ namespace Annie
                 Items.UseItem(3128, target);
             }
 
-			var combotarget = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
-            var fComboDamage = GetComboDamage(combotarget);
             var useQ = Config.Item("qCombo").GetValue<bool>();
             var useW = Config.Item("wCombo").GetValue<bool>();
             var useR = Config.Item("rCombo").GetValue<bool>();
