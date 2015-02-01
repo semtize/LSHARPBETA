@@ -169,7 +169,7 @@ namespace Annie
 			Config.Item("ComboDamage").ValueChanged += (object sender, OnValueChangeEventArgs e) => { Utility.HpBarDamageIndicator.Enabled = e.GetNewValue<bool>(); };
             if (Config.Item("ComboDamage").GetValue<bool>())
             {
-                Utility.HpBarDamageIndicator.DamageToUnit = combodmg;
+                Utility.HpBarDamageIndicator.DamageToUnit = ComboDmg;
                 Utility.HpBarDamageIndicator.Enabled = true;
             }
         }
@@ -183,11 +183,11 @@ namespace Annie
 		private static double ComboDmg(Obj_AI_Hero target)
 			{
 			var combodmg = 0.0d;
-            if (Q.IsReady()) combodmg += SpellDmg(target, SpellSlot.Q);
-            if (W.IsReady()) combodmg += SpellDmg(target, SpellSlot.W);
-            if (R.IsReady()) combodmg += SpellDmg(target, SpellSlot.R);
-            if (ObjectManager.Player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready) combodmg += ObjectManager.Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
-            return combodmg;
+            if (Q.IsReady()) ComboDmg += SpellDmg(target, SpellSlot.Q);
+            if (W.IsReady()) ComboDmg += SpellDmg(target, SpellSlot.W);
+            if (R.IsReady()) ComboDmg += SpellDmg(target, SpellSlot.R);
+            if (ObjectManager.Player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready) ComboDmg += ObjectManager.Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
+            return ComboDmg;
 			}
 			
         private static void OnDraw(EventArgs args)
@@ -500,7 +500,7 @@ namespace Annie
                 {
                     Q.Cast(gapcloser.Sender);
                 }
-                else if (W.IsReady() && target.IsValidTarget(W.Range))
+                else if (W.IsReady() && etarget.IsValidTarget(W.Range))
                 {
                     W.Cast(gapcloser.Sender);
                 }
@@ -514,7 +514,7 @@ namespace Annie
                     {
                         Q.Cast(gapcloser.Sender);
                     }
-                    else if (W.IsReady() && target.IsValidTarget(W.Range))
+                    else if (W.IsReady() && etarget.IsValidTarget(W.Range))
                     {
                         W.Cast(gapcloser.Sender);
                     }
