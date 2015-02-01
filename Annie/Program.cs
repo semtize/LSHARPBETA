@@ -101,9 +101,12 @@ namespace Annie
             Config.SubMenu("combo").AddItem(new MenuItem("wCombo", "Use W")).SetValue(true);
             Config.SubMenu("combo").AddItem(new MenuItem("rCombo", "Use R")).SetValue(true);
             Config.SubMenu("combo").AddItem(new MenuItem("itemsCombo", "Use Items")).SetValue(true);
-            Config.SubMenu("combo")
-                .AddItem(new MenuItem("flashCombo", "Targets needed to Flash -> R(stun)"))
-                .SetValue(new Slider(4, 5, 1));
+            Config.SubMenu("combo").AddItem(new MenuItem("flashCombo", "Targets needed to Flash -> R(stun)")).SetValue(new Slider(4, 5, 1));
+			
+			Config.AddSubMenu(new Menu("Flash Combo", "FlashCombo"));
+            Config.SubMenu("FlashCombo").AddItem(new MenuItem("FlashComboKey", "FlashCombo!").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
+            Config.SubMenu("FlashCombo").AddItem(new MenuItem("FlashComboMinEnemies", "FlashCombo Min Enemies Hit").SetValue(new Slider(2, 1, 5)));
+            Config.SubMenu("FlashCombo").AddItem(new MenuItem("FlashAntiSuicide", "Use Flash Anti Suicide").SetValue(true));
 
             Config.AddSubMenu(new Menu("Harass(Mixed Mode) settings", "harass"));
             Config.SubMenu("harass")
@@ -293,6 +296,67 @@ namespace Annie
             }
         }
 
+		private static double GetBurstComboDamage(Obj_AI_Hero target)
+        {
+            double totalComboDamage = 0;
+            totalComboDamage += Player.GetSpellDamage(target, SpellSlot.R);
+            totalComboDamage += Player.GetSpellDamage(target, SpellSlot.Q);
+            totalComboDamage += Player.GetSpellDamage(target, SpellSlot.W);
+
+            if (summonerSpellManager.IsReadyIgnite())
+                totalComboDamage += Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
+
+            return totalComboDamage;
+        }
+
+		private static void FlashCombo()
+        {
+            var UseFlashCombo = Config.Item("FlashComboKey").GetValue<KeyBind>().Active;
+            var FlashComboMinEnemies = Config.Item("FlashComboMinEnemies").GetValue<Slider>().Value;
+            var FlashAntiSuicide = Config.Item("FlashAntiSuicide").GetValue<bool>();
+
+            if (!UseFlashCombo)
+                return;
+				
+            if (((StunCount == 3 && E.IsReady()) || StunCount == 4) && summonerSpellManager.IsReadyFlash() && R.IsReady())
+            {
+                var allEnemies = DevHelper.GetEnemyList()
+                    .Where(x => Player.Distance(x) > R.Range && Player.Distance(x) < R.Range + 500);
+
+                var enemies = DevHelper.GetEnemyList()
+                    .Where(x => Player.Distance(x) > R.Range && Player.Distance(x) < R.Range + 400 && GetBurstComboDamage(x) * 0.9 > x.Health)
+                    .OrderBy(x => x.Health);
+
+                bool isSuicide = FlashAntiSuicide ? allEnemies.Count() - enemies.Count() > 2 : false;
+
+                if (enemies.Any() && !isSuicide)
+                { 
+                    var enemy = enemies.First();
+                    if (DevHelper.CountEnemyInPositionRange(enemy.ServerPosition, 250) >= FlashComboMinEnemies)
+                    {
+                        var predict = R.GetPrediction(enemy, true).CastPosition;
+
+                        if (qtPassiveStacks == 3)
+                        {
+                            E.Cast();
+                        }
+
+                        summonerSpellManager.CastFlash(predict);
+
+                        if (R.IsReady())
+                            R.Cast(predict);
+
+                        if (W.IsReady())
+                            W.Cast(predict);
+
+                        if (E.IsReady())
+                            E.Cast();
+
+                    }
+                }
+            }
+        }
+		
         private static void Combo(Obj_AI_Base target, Obj_AI_Base flashRtarget)
         {
             if ((target == null && flashRtarget == null) || Environment.TickCount < DoingCombo ||
