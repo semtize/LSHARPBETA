@@ -35,6 +35,8 @@ namespace Annie
         public static SpellSlot FlashSlot;
 		private static PredictionInput FlashTibbers_pi;
         private static PredictionOutput FlashTibbers_po;
+		private static Vector3 PredictedTibbers;
+
         public static Menu Config;
 
         private static int StunCount
@@ -174,7 +176,7 @@ namespace Annie
 		
 		private static double SpellDmg(Obj_AI_Hero target, SpellSlot spell)
         {
-            var spelldamage = Player.GetSpellDamage(target, spell);
+            var spelldamage = ObjectManager.Player.GetSpellDamage(target, spell);
             return spelldamage;
         }
 		
@@ -184,7 +186,7 @@ namespace Annie
             if (Q.IsReady()) combodmg += SpellDmg(target, SpellSlot.Q);
             if (W.IsReady()) combodmg += SpellDmg(target, SpellSlot.W);
             if (R.IsReady()) combodmg += SpellDmg(target, SpellSlot.R);
-            if (ObjectManager.Player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready) combodmg += Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
+            if (ObjectManager.Player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready) combodmg += ObjectManager.Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
             return combodmg;
 			}
 			
@@ -258,7 +260,6 @@ namespace Annie
                     break;
             }
 			
-			FlashCombo();
         }
 
         private static void ChargeStun()
@@ -425,20 +426,20 @@ namespace Annie
 
 		private static void FlashCombo(Obj_AI_Base target)
 		{
-		 if (menu.Item("FlashTibbers").GetValue<bool>())
+		 if (Config.Item("FlashTibbers").GetValue<bool>())
             {
                 FlashTibbers_pi.Aoe = true; FlashTibbers_pi.Collision = false; FlashTibbers_pi.Delay = 250; FlashTibbers_pi.Range = 1000; FlashTibbers_pi.Speed = float.MaxValue; FlashTibbers_pi.Type = SkillshotType.SkillshotCircle; FlashTibbers_pi.Radius = 100;
                 FlashTibbers_po = Prediction.GetPrediction(FlashTibbers_pi);
                 var flashtibbers_hitcount = FlashTibbers_po.AoeTargetsHitCount;
                 var flashtibbers_hitchance = FlashTibbers_po.Hitchance;
                 PredictedTibbers = FlashTibbers_po.UnitPosition;
-                if (StunCount == 4 && flashtibbers_hitcount > menu.Item("FlashTibbersmin").GetValue<int>() && flashtibbers_hitchance >= HitChance.High && Player.Distance(FlashTibbers_po.UnitPosition) > R.Range)
+                if (StunCount == 4 && flashtibbers_hitcount > Config.Item("FlashTibbersmin").GetValue<int>() && flashtibbers_hitchance >= HitChance.High && Player.Distance(FlashTibbers_po.UnitPosition) > R.Range)
                 {
                     ObjectManager.Player.Spellbook.CastSpell(FlashSlot, PredictedTibbers);
                     R.Cast(PredictedTibbers, UsePackets());
                 }
             }
-            var minTargets = menu.Item("flashtibbersmin").GetValue<int>();
+            var minTargets = Config.Item("flashtibbersmin").GetValue<int>();
 		}
 		
         private static void Farm(bool laneclear)
@@ -491,30 +492,30 @@ namespace Annie
 		private static void AntiGapcloser_OnEnemyGapcloser(ActiveGapcloser gapcloser)
         {
             var etarget = gapcloser.Sender;
-            if (etarget.IsAlly || etarget.IsMe || !(menu.Item("AntiGapcloser").GetValue<bool>())) return;
+            if (etarget.IsAlly || etarget.IsMe || !(Config.Item("AntiGapcloser").GetValue<bool>())) return;
             if (StunCount == 4)
             {
                 if (Q.IsReady())
                 {
-                    Q.Cast(gapcloser.Sender, UsePackets());
+                    Q.Cast(gapcloser.Sender);
                 }
                 else if (W.IsReady() && W.InRange(gapcloser.Sender.Position))
                 {
-                    W.Cast(gapcloser.Sender, UsePackets());
+                    W.Cast(gapcloser.Sender);
                 }
             }
             if (StunCount == 3)
             {
-                if (E.IsReady()) E.Cast(UsePackets());
+                if (E.IsReady()) E.Cast();
                 if (StunCount == 4)
                 {
                     if (Q.IsReady())
                     {
-                        Q.Cast(gapcloser.Sender, UsePackets());
+                        Q.Cast(gapcloser.Sender);
                     }
                     else if (W.IsReady() && W.InRange(gapcloser.Sender.Position))
                     {
-                        W.Cast(gapcloser.Sender, UsePackets());
+                        W.Cast(gapcloser.Sender);
                     }
                 }
             }
