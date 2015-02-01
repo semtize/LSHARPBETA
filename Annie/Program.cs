@@ -169,25 +169,25 @@ namespace Annie
 			Config.Item("ComboDamage").ValueChanged += (object sender, OnValueChangeEventArgs e) => { Utility.HpBarDamageIndicator.Enabled = e.GetNewValue<bool>(); };
             if (Config.Item("ComboDamage").GetValue<bool>())
             {
-                Utility.HpBarDamageIndicator.DamageToUnit = ComboDmg;
+                Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
                 Utility.HpBarDamageIndicator.Enabled = true;
             }
         }
 		
-		private static double SpellDmg(Obj_AI_Hero target, SpellSlot spell)
+		private static double SpellDmg(Obj_AI_Hero enemy, SpellSlot spell)
         {
-            var spelldamage = ObjectManager.Player.GetSpellDamage(target, spell);
+            var spelldamage = ObjectManager.Player.GetSpellDamage(enemy, spell);
             return spelldamage;
         }
 		
-		private static double ComboDmg(Obj_AI_Hero target)
+		private static double GetComboDamage(Obj_AI_Hero enemy)
 			{
-			var combodmg = 0.0d;
-            if (Q.IsReady()) ComboDmg += SpellDmg(target, SpellSlot.Q);
-            if (W.IsReady()) ComboDmg += SpellDmg(target, SpellSlot.W);
-            if (R.IsReady()) ComboDmg += SpellDmg(target, SpellSlot.R);
-            if (ObjectManager.Player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready) ComboDmg += ObjectManager.Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
-            return ComboDmg;
+			var spellCombo = 0.0d;
+            if (Q.IsReady()) spellCombo += SpellDmg(target, SpellSlot.Q);
+            if (R.IsReady()) spellCombo += SpellDmg(target, SpellSlot.Q);
+			if (W.IsReady()) spellCombo += SpellDmg(target, SpellSlot.Q);      
+            return (float)Player.GetComboDamage(enemy, spellCombo);
+
 			}
 			
         private static void OnDraw(EventArgs args)
