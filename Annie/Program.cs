@@ -174,18 +174,18 @@ namespace Annie
             }
         }
 		
-		private static double SpellDmg(Obj_AI_Hero enemy, SpellSlot spell)
+		private static float SpellDmg(Obj_AI_Hero enemy, SpellSlot spell)
         {
             var spelldamage = ObjectManager.Player.GetSpellDamage(enemy, spell);
             return spelldamage;
         }
 		
-		private static double GetComboDamage(Obj_AI_Hero enemy)
+		private static float GetComboDamage(Obj_AI_Hero enemy)
 			{
 			var spellCombo = 0.0d;
-            if (Q.IsReady()) spellCombo += SpellDmg(target, SpellSlot.Q);
-            if (R.IsReady()) spellCombo += SpellDmg(target, SpellSlot.Q);
-			if (W.IsReady()) spellCombo += SpellDmg(target, SpellSlot.Q);      
+            if (Q.IsReady()) spellCombo += SpellDmg(enemy, SpellSlot.Q);
+            if (R.IsReady()) spellCombo += SpellDmg(enemy, SpellSlot.Q);
+			if (W.IsReady()) spellCombo += SpellDmg(enemy, SpellSlot.Q);      
             return (float)Player.GetComboDamage(enemy, spellCombo);
 
 			}
