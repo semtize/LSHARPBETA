@@ -174,7 +174,7 @@ namespace Annie
             }
         }
 		
-		private static float SpellDmg(Obj_AI_Hero enemy, SpellSlot spell)
+		private static double SpellDmg(Obj_AI_Hero enemy, SpellSlot spell)
         {
             var spelldamage = ObjectManager.Player.GetSpellDamage(enemy, spell);
             return spelldamage;
@@ -186,7 +186,7 @@ namespace Annie
             if (Q.IsReady()) spellCombo += SpellDmg(enemy, SpellSlot.Q);
             if (R.IsReady()) spellCombo += SpellDmg(enemy, SpellSlot.Q);
 			if (W.IsReady()) spellCombo += SpellDmg(enemy, SpellSlot.Q);      
-            return (float)Player.GetComboDamage(enemy, spellCombo);
+            return (float)ObjectManager.Player.GetComboDamage(enemy, spellCombo);
 
 			}
 			
@@ -321,8 +321,7 @@ namespace Annie
                 Items.UseItem(3128, target);
             }
 
-			var combotarget = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
-            var combodmg = ComboDmg(combotarget);
+
             var useQ = Config.Item("qCombo").GetValue<bool>();
             var useW = Config.Item("wCombo").GetValue<bool>();
             var useR = Config.Item("rCombo").GetValue<bool>();
