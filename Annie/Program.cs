@@ -321,7 +321,7 @@ namespace Annie
                 Items.UseItem(3128, target);
             }
 
-
+            var combodmg = ComboDmg(target);
             var useQ = Config.Item("qCombo").GetValue<bool>();
             var useW = Config.Item("wCombo").GetValue<bool>();
             var useR = Config.Item("rCombo").GetValue<bool>();
