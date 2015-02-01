@@ -299,12 +299,12 @@ namespace Annie
 		private static double GetBurstComboDamage(Obj_AI_Hero target)
         {
             double totalComboDamage = 0;
-            totalComboDamage += Player.GetSpellDamage(target, SpellSlot.R);
-            totalComboDamage += Player.GetSpellDamage(target, SpellSlot.Q);
-            totalComboDamage += Player.GetSpellDamage(target, SpellSlot.W);
+            totalComboDamage += ObjectManager.Player.GetSpellDamage(target, SpellSlot.R);
+            totalComboDamage += ObjectManager.Player.GetSpellDamage(target, SpellSlot.Q);
+            totalComboDamage += ObjectManager.Player.GetSpellDamage(target, SpellSlot.W);
 
-            if (summonerSpellManager.IsReadyIgnite())
-                totalComboDamage += Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
+            if (ObjectManager.Player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+                totalComboDamage += ObjectManager.Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
 
             return totalComboDamage;
         }
@@ -318,13 +318,13 @@ namespace Annie
             if (!UseFlashCombo)
                 return;
 				
-            if (((StunCount == 3 && E.IsReady()) || StunCount == 4) && summonerSpellManager.IsReadyFlash() && R.IsReady())
+            if (((StunCount == 3 && E.IsReady()) || StunCount == 4) && (ObjectManager.Player.Spellbook.CanUseSpell(FlashSlot) == SpellState.Ready) && R.IsReady())
             {
                 var allEnemies = DevHelper.GetEnemyList()
-                    .Where(x => Player.Distance(x) > R.Range && Player.Distance(x) < R.Range + 500);
+                    .Where(x => ObjectManager.Player.Distance(x) > R.Range && ObjectManager.Player.Distance(x) < R.Range + 500);
 
                 var enemies = DevHelper.GetEnemyList()
-                    .Where(x => Player.Distance(x) > R.Range && Player.Distance(x) < R.Range + 400 && GetBurstComboDamage(x) * 0.9 > x.Health)
+                    .Where(x => ObjectManager.Player.Distance(x) > R.Range && ObjectManager.Player.Distance(x) < R.Range + 400 && GetBurstComboDamage(x) * 0.9 > x.Health)
                     .OrderBy(x => x.Health);
 
                 bool isSuicide = FlashAntiSuicide ? allEnemies.Count() - enemies.Count() > 2 : false;
@@ -336,7 +336,7 @@ namespace Annie
                     {
                         var predict = R.GetPrediction(enemy, true).CastPosition;
 
-                        if (qtPassiveStacks == 3)
+                        if (StunCount == 3)
                         {
                             E.Cast();
                         }
