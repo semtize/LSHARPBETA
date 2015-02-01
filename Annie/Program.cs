@@ -76,7 +76,7 @@ namespace Annie
             FlashSlot = ObjectManager.Player.GetSpellSlot("SummonerFlash");
 
             Q = new Spell(SpellSlot.Q, 625f);
-            W = new Spell(SpellSlot.W, 625f);
+            W = new Spell(SpellSlot.W, 600f);
             E = new Spell(SpellSlot.E);
             R = new Spell(SpellSlot.R, 600f);
             R1 = new Spell(SpellSlot.R, 900f);
