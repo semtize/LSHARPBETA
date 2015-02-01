@@ -500,7 +500,7 @@ namespace Annie
                 {
                     Q.Cast(gapcloser.Sender);
                 }
-                else if (W.IsReady() && unit.IsValidTarget(W.Range))
+                else if (W.IsReady() && target.IsValidTarget(W.Range))
                 {
                     W.Cast(gapcloser.Sender);
                 }
@@ -514,7 +514,7 @@ namespace Annie
                     {
                         Q.Cast(gapcloser.Sender);
                     }
-                    else if (W.IsReady() && unit.IsValidTarget(W.Range))
+                    else if (W.IsReady() && target.IsValidTarget(W.Range))
                     {
                         W.Cast(gapcloser.Sender);
                     }
@@ -534,7 +534,7 @@ namespace Annie
                 {
                     Q.Cast(target);
                 }
-                else if (W.IsReady() && unit.IsValidTarget(W.Range))
+                else if (W.IsReady() && target.IsValidTarget(W.Range))
                 {
                     W.Cast(target);
                 }
@@ -548,7 +548,7 @@ namespace Annie
                     {
                         Q.Cast(target);
                     }
-                    else if (W.IsReady() && unit.IsValidTarget(W.Range))
+                    else if (W.IsReady() && target.IsValidTarget(W.Range))
                     {
                         W.Cast(target);
                     }
@@ -567,7 +567,7 @@ namespace Annie
                     {
                         Q.Cast(target);
                     }
-                    else if (W.IsReady() && unit.IsValidTarget(W.Range))
+                    else if (W.IsReady() && target.IsValidTarget(W.Range))
                     {
                         W.Cast(target);
                     }
