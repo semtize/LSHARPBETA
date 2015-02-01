@@ -181,7 +181,7 @@ namespace Annie
             fComboDamage += W.IsReady() ? (float) ObjectManager.Player.GetSpellDamage(enemy, SpellSlot.W) : 0;
             fComboDamage += R.IsReady() ? (float) ObjectManager.Player.GetSpellDamage(enemy, SpellSlot.R) : 0; 
 			fComboDamage += IgniteSlot != SpellSlot.Unknown && ObjectManager.Player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready ? (float) ObjectManager.Player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite) : 0f;			
-            return (float)ObjectManager.Player.GetComboDamage(enemy, fComboDamage);
+            return (float) fComboDamage;
 			}
 			
         private static void OnDraw(EventArgs args)
@@ -316,7 +316,7 @@ namespace Annie
             }
 
 			var combotarget = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
-            var spellCombo = GetComboDamage(combotarget);
+            var fComboDamage = GetComboDamage(combotarget);
             var useQ = Config.Item("qCombo").GetValue<bool>();
             var useW = Config.Item("wCombo").GetValue<bool>();
             var useR = Config.Item("rCombo").GetValue<bool>();
