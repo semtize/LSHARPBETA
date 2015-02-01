@@ -128,7 +128,7 @@ namespace Annie
             Config.SubMenu("misc").AddItem(new MenuItem("suppMode", "Support mode").SetValue(false));
             Config.SubMenu("misc").AddItem(new MenuItem("FountainPassive", "Charge Stun in Fountain").SetValue(true));
             Config.SubMenu("misc").AddItem(new MenuItem("LanePassive", "Charge Stun In Lane").SetValue(true));
-			Congig.SubMenu("misc").AddItem(new MenuItem("AntiGapcloser", "Anti-Gapcloser").SetValue(true));
+			Config.SubMenu("misc").AddItem(new MenuItem("AntiGapcloser", "Anti-Gapcloser").SetValue(true));
             Config.SubMenu("misc")
                 .AddItem(new MenuItem("LanePassivePercent", "Min Mana % to Charge").SetValue(new Slider(60)));
 
