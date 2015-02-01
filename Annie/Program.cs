@@ -433,10 +433,10 @@ namespace Annie
                 var flashtibbers_hitcount = FlashTibbers_po.AoeTargetsHitCount;
                 var flashtibbers_hitchance = FlashTibbers_po.Hitchance;
                 PredictedTibbers = FlashTibbers_po.UnitPosition;
-                if (StunCount == 4 && flashtibbers_hitcount > Config.Item("FlashTibbersmin").GetValue<int>() && flashtibbers_hitchance >= HitChance.High && Player.Distance(FlashTibbers_po.UnitPosition) > R.Range)
+                if (StunCount == 4 && flashtibbers_hitcount > Config.Item("FlashTibbersmin").GetValue<int>() && flashtibbers_hitchance >= HitChance.High && ObjectManager.Player.Distance(FlashTibbers_po.UnitPosition) > R.Range)
                 {
                     ObjectManager.Player.Spellbook.CastSpell(FlashSlot, PredictedTibbers);
-                    R.Cast(PredictedTibbers, UsePackets());
+                    R.Cast(PredictedTibbers);
                 }
             }
             var minTargets = Config.Item("flashtibbersmin").GetValue<int>();
@@ -499,7 +499,7 @@ namespace Annie
                 {
                     Q.Cast(gapcloser.Sender);
                 }
-                else if (W.IsReady() && W.InRange(gapcloser.Sender.Position))
+                else if (W.IsReady() && useW)
                 {
                     W.Cast(gapcloser.Sender);
                 }
@@ -513,7 +513,7 @@ namespace Annie
                     {
                         Q.Cast(gapcloser.Sender);
                     }
-                    else if (W.IsReady() && W.InRange(gapcloser.Sender.Position))
+                    else if (W.IsReady() && useW)
                     {
                         W.Cast(gapcloser.Sender);
                     }
@@ -533,7 +533,7 @@ namespace Annie
                 {
                     Q.Cast(target);
                 }
-                else if (W.IsReady() && W.InRange(target.Position))
+                else if (W.IsReady() && useW)
                 {
                     W.Cast(target);
                 }
@@ -547,7 +547,7 @@ namespace Annie
                     {
                         Q.Cast(target);
                     }
-                    else if (W.IsReady() && W.InRange(target.Position))
+                    else if (W.IsReady() &&useW)
                     {
                         W.Cast(target);
                     }
@@ -566,7 +566,7 @@ namespace Annie
                     {
                         Q.Cast(target);
                     }
-                    else if (W.IsReady() && W.InRange(target.Position))
+                    else if (W.IsReady() && useW)
                     {
                         W.Cast(target);
                     }
