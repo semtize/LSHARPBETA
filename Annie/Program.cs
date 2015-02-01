@@ -33,6 +33,8 @@ namespace Annie
         public static float DoingCombo;
         public static SpellSlot IgniteSlot;
         public static SpellSlot FlashSlot;
+		private static PredictionInput FlashTibbers_pi;
+        private static PredictionOutput FlashTibbers_po;
         public static Menu Config;
 
         private static int StunCount
@@ -103,6 +105,10 @@ namespace Annie
             Config.SubMenu("combo").AddItem(new MenuItem("itemsCombo", "Use Items")).SetValue(true);
             Config.SubMenu("combo").AddItem(new MenuItem("flashCombo", "Targets needed to Flash -> R(stun)")).SetValue(new Slider(4, 5, 1));
 			Config.SubMenu("combo").AddItem(new MenuItem("FlashComboKey", "FlashCombo!").SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
+			
+			Config.AddSubMenu(new Menu("Flash Combo", "FlashCombo"));
+            Config.SubMenu("FlashCombo").AddItem(new MenuItem("FlashTibbersmin", "FlashCombo Min Enemies Hit").SetValue(new Slider(2, 1, 5)));
+            Config.SubMenu("FlashCombo").AddItem(new MenuItem("FlashTibbers", "Use Flash Tibbers").SetValue(true));
 
             Config.AddSubMenu(new Menu("Harass(Mixed Mode) settings", "harass"));
             Config.SubMenu("harass")
@@ -151,32 +157,39 @@ namespace Annie
             Game.OnGameUpdate += OnGameUpdate;
             GameObject.OnCreate += OnCreateObject;
             Orbwalking.BeforeAttack += OrbwalkingBeforeAttack;
+			Interrupter.OnPossibleToInterrupt += OnPossibleToInterrupt;
+			AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
+
+
 
             Game.PrintChat("Annie# Loaded");
 			
 			Config.Item("ComboDamage").ValueChanged += (object sender, OnValueChangeEventArgs e) => { Utility.HpBarDamageIndicator.Enabled = e.GetNewValue<bool>(); };
             if (Config.Item("ComboDamage").GetValue<bool>())
             {
-                Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
+                Utility.HpBarDamageIndicator.DamageToUnit = combodmg;
                 Utility.HpBarDamageIndicator.Enabled = true;
             }
         }
 		
-		private static float GetComboDamage(Obj_AI_Hero enemy)
+		private static double SpellDmg(Obj_AI_Hero target, SpellSlot spell)
+        {
+            var spelldamage = Player.GetSpellDamage(target, spell);
+            return spelldamage;
+        }
+		
+		private static float GetComboDamage(Obj_AI_Hero target)
 			{
-				IEnumerable<SpellSlot> spellCombo = new[] { SpellSlot.Q, SpellSlot.W };
-				if (StunCount >= 4)
-					spellCombo = spellCombo.Concat(new[] { SpellSlot.Q });
-				if (R.IsReady())
-					spellCombo = spellCombo.Concat(new[] { SpellSlot.R });
-	
-				return (float)ObjectManager.Player.GetComboDamage(enemy, spellCombo);
+			var combodmg = 0.0d;
+            if (Q.IsReady()) combodmg += SpellDmg(target, SpellSlot.Q);
+            if (W.IsReady()) combodmg += SpellDmg(target, SpellSlot.W);
+            if (R.IsReady()) combodmg += SpellDmg(target, SpellSlot.R);
+            if (ObjectManager.Player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready) combodmg += Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
+            return combodmg;
 			}
 			
         private static void OnDraw(EventArgs args)
         {
-            // Utility.DrawCircle(R1.GetPrediction(SimpleTs.GetTarget(900, SimpleTs.DamageType.Magical)).CastPosition, 250,
-            //     Color.Aquamarine);
             foreach (var spell in SpellList)
             {
                 var menuItem = Config.Item(spell.Slot + "Draw").GetValue<Circle>();
@@ -244,6 +257,8 @@ namespace Annie
                     Farm(true);
                     break;
             }
+			
+			FlashCombo();
         }
 
         private static void ChargeStun()
@@ -408,6 +423,24 @@ namespace Annie
             }
         }
 
+		private static void FlashCombo(Obj_AI_Base target)
+		{
+		 if (menu.Item("FlashTibbers").GetValue<bool>())
+            {
+                FlashTibbers_pi.Aoe = true; FlashTibbers_pi.Collision = false; FlashTibbers_pi.Delay = 250; FlashTibbers_pi.Range = 1000; FlashTibbers_pi.Speed = float.MaxValue; FlashTibbers_pi.Type = SkillshotType.SkillshotCircle; FlashTibbers_pi.Radius = 100;
+                FlashTibbers_po = Prediction.GetPrediction(FlashTibbers_pi);
+                var flashtibbers_hitcount = FlashTibbers_po.AoeTargetsHitCount;
+                var flashtibbers_hitchance = FlashTibbers_po.Hitchance;
+                PredictedTibbers = FlashTibbers_po.UnitPosition;
+                if (StunCount == 4 && flashtibbers_hitcount > menu.Item("FlashTibbersmin").GetValue<int>() && flashtibbers_hitchance >= HitChance.High && Player.Distance(FlashTibbers_po.UnitPosition) > R.Range)
+                {
+                    ObjectManager.Player.Spellbook.CastSpell(FlashSlot, PredictedTibbers);
+                    R.Cast(PredictedTibbers, UsePackets());
+                }
+            }
+            var minTargets = menu.Item("flashtibbersmin").GetValue<int>();
+		}
+		
         private static void Farm(bool laneclear)
         {
             var minions = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, Q.Range);
@@ -453,5 +486,98 @@ namespace Annie
                     .Where(hero => hero.Team != ObjectManager.Player.Team)
                     .Count(hero => Vector3.Distance(pos, hero.ServerPosition) <= range);
         }
-    }
+    
+	    #region AntiGapcloser
+		private static void AntiGapcloser_OnEnemyGapcloser(ActiveGapcloser gapcloser)
+        {
+            var etarget = gapcloser.Sender;
+            if (etarget.IsAlly || etarget.IsMe || !(menu.Item("AntiGapcloser").GetValue<bool>())) return;
+            if (StunCount == 4)
+            {
+                if (Q.IsReady())
+                {
+                    Q.Cast(gapcloser.Sender, UsePackets());
+                }
+                else if (W.IsReady() && W.InRange(gapcloser.Sender.Position))
+                {
+                    W.Cast(gapcloser.Sender, UsePackets());
+                }
+            }
+            if (StunCount == 3)
+            {
+                if (E.IsReady()) E.Cast(UsePackets());
+                if (StunCount == 4)
+                {
+                    if (Q.IsReady())
+                    {
+                        Q.Cast(gapcloser.Sender, UsePackets());
+                    }
+                    else if (W.IsReady() && W.InRange(gapcloser.Sender.Position))
+                    {
+                        W.Cast(gapcloser.Sender, UsePackets());
+                    }
+                }
+            }
+        }
+		#endregion
+	        
+		#region OnPossibleToInterrupt
+		private static void OnPossibleToInterrupt(Obj_AI_Base target, InterruptableSpell spell)
+        {
+            if (!target.IsEnemy)
+                return;
+            if (StunCount == 4)
+            {
+                if (Q.IsReady())
+                {
+                    Q.Cast(target);
+                }
+                else if (W.IsReady() && W.InRange(target.Position))
+                {
+                    W.Cast(target);
+                }
+            }
+            if (StunCount == 3)
+            {
+                if (E.IsReady()) E.Cast();
+                if (StunCount == 4)
+                {
+                    if (Q.IsReady())
+                    {
+                        Q.Cast(target);
+                    }
+                    else if (W.IsReady() && W.InRange(target.Position))
+                    {
+                        W.Cast(target);
+                    }
+                }
+            }
+            if (StunCount == 2)
+            {
+                if (E.IsReady() && Q.IsReady()) 
+                {
+                    E.Cast();
+                    Q.Cast(target);
+                }
+                if (StunCount == 4)
+                {
+                    if (Q.IsReady())
+                    {
+                        Q.Cast(target);
+                    }
+                    else if (W.IsReady() && W.InRange(target.Position))
+                    {
+                        W.Cast(target);
+                    }
+                }
+            }
+        }
+		#endregion
+	
+	
+	
+	
+	
+	
+	}
 }
