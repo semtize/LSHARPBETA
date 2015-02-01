@@ -180,7 +180,7 @@ namespace Annie
             return spelldamage;
         }
 		
-		private static float GetComboDamage(Obj_AI_Hero target)
+		private static double ComboDmg(Obj_AI_Hero target)
 			{
 			var combodmg = 0.0d;
             if (Q.IsReady()) combodmg += SpellDmg(target, SpellSlot.Q);
