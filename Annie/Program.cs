@@ -166,11 +166,13 @@ namespace Annie
 
             Game.PrintChat("Annie# Loaded");
 			
-			Config.Item("ComboDamage").ValueChanged += (object sender, OnValueChangeEventArgs e) => { Utility.HpBarDamageIndicator.Enabled = e.GetNewValue<bool>(); };
-            if (Config.Item("ComboDamage").GetValue<bool>())
-            {
-                Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
-                Utility.HpBarDamageIndicator.Enabled = true;
+			Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
+                Utility.HpBarDamageIndicator.Enabled = dmgAfterComboItem.GetValue<bool>();
+                dmgAfterComboItem.ValueChanged += delegate(object sender, OnValueChangeEventArgs eventArgs)
+                {
+                    Utility.HpBarDamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
+                };
+
             }
         }
 				
