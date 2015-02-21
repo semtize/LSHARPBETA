@@ -260,7 +260,7 @@ namespace PerplexedNidalee
                 if (Config.HarassJavelin && (isOffCooldown(NidaleeSpell.Javelin) || SpellManager.Javelin.IsReady()))
                 {
                     if (target.IsValidTarget(SpellManager.Javelin.Range))
-                        SpellManager.CastSpell(SpellManager.Javelin, target, HitChance.VeryHigh, false);
+                        SpellManager.CastSpell(SpellManager.Javelin, target, HitChance.High, false);
                 }
                 if (Config.HarassBushwhack && (isOffCooldown(NidaleeSpell.Bushwhack) || SpellManager.Bushwhack.IsReady()))
                 {

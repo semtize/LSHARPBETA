@@ -15,6 +15,7 @@ namespace Cassiopeia
     {
         static readonly Obj_AI_Hero player = ObjectManager.Player;
         static Orbwalking.Orbwalker Orbwalker;
+        static HpBarIndicator hpi = new HpBarIndicator();
         static Spell Q;
         static Spell W;
         static Spell E;
@@ -51,7 +52,7 @@ namespace Cassiopeia
 
             E = new Spell(SpellSlot.E, 700f);
             E.SetTargetted(0.2f, float.MaxValue);
-            
+
             R = new Spell(SpellSlot.R, 800f);
             R.SetSkillshot(0.6f, (float)(80 * Math.PI / 180), float.MaxValue, false, SkillshotType.SkillshotCone);
 
@@ -75,7 +76,7 @@ namespace Cassiopeia
             menu.AddSubMenu(new Menu("Ultimate", "Ultimate"));
             menu.SubMenu("Ultimate").AddItem(new MenuItem("comboR", "Use ult in Combo").SetValue(true));
 
-            menu.SubMenu("Ultimate").SubMenu("AntiGapcloser").AddItem(new MenuItem("gapcloserR", "Use ult for Anti Gapcloser").SetValue(true));
+            menu.SubMenu("Ultimate").SubMenu("AntiGapcloser").AddItem(new MenuItem("gapcloserR", "Use ult for Anti Gapcloser").SetValue(false));
             menu.SubMenu("Ultimate").SubMenu("Interruptspells").AddItem(new MenuItem("interruptR", "Use ult for Interrupt spells").SetValue(true));
 
             Boolean yasuoHere = false;
@@ -96,19 +97,24 @@ namespace Cassiopeia
             menu.SubMenu("Misc").AddItem(new MenuItem("PacketCast", "Use Packets").SetValue(true));
 
             menu.AddSubMenu(new Menu("Drawings", "Drawings"));
-            menu.SubMenu("Drawings").AddItem(new MenuItem("QRange", "Draw Q").SetValue(new Circle(false, Color.FromArgb(150, Color.DodgerBlue))));
-            menu.SubMenu("Drawings").AddItem(new MenuItem("ERange", "Draw E").SetValue(new Circle(false, Color.FromArgb(150, Color.DodgerBlue))));
-            menu.SubMenu("Drawings").AddItem(new MenuItem("RRange", "Draw R").SetValue(new Circle(false, Color.FromArgb(150, Color.DodgerBlue))));
+            menu.SubMenu("Drawings").AddItem(new MenuItem("QRange", "Draws Q range").SetValue(new Circle(false, Color.FromArgb(150, Color.DodgerBlue))));
+            menu.SubMenu("Drawings").AddItem(new MenuItem("ERange", "Draws E range").SetValue(new Circle(false, Color.FromArgb(150, Color.DodgerBlue))));
+            menu.SubMenu("Drawings").AddItem(new MenuItem("RRange", "Draws R range").SetValue(new Circle(false, Color.FromArgb(150, Color.DodgerBlue))));
+            menu.SubMenu("Drawings").SubMenu("DrawHP").AddItem(new MenuItem("drawHPDmg", "Draws DMG in healthbars").SetValue(true));
+            menu.SubMenu("Drawings").SubMenu("DrawHP").AddItem(new MenuItem("qCountsDraw", "Counts Qs in the calculation").SetValue(new Slider(2, 1, 5)));
+            menu.SubMenu("Drawings").SubMenu("DrawHP").AddItem(new MenuItem("eCountsDraw", "Counts Es in the calculation").SetValue(new Slider(4, 1, 10)));
+            menu.SubMenu("Drawings").SubMenu("DrawHP").AddItem(new MenuItem("RCountsDraw", "Count R in the calculation").SetValue(true));
 
             menu.AddToMainMenu();
-            
+
             Game.OnGameUpdate += OnGameUpdate;
             Orbwalking.BeforeAttack += Orbwalking_BeforeAttack;
             Game.OnGameSendPacket += Game_OnGameSendPacket;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
-            Interrupter.OnPossibleToInterrupt += Interrupter_OnPossibleToInterrupt;
+            Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
             Game.OnWndProc += GameOnOnWndProc;
             Drawing.OnDraw += DrawingOnOnDraw;
+            Drawing.OnEndScene += OnEndScene;
             if (yasuoHere)
                 Obj_AI_Base.OnProcessSpellCast += Obj_AI_Hero_OnProcessSpellCast;
         }
@@ -196,6 +202,23 @@ namespace Cassiopeia
             }
         }
 
+        static void OnEndScene(EventArgs args)
+        {
+            if (!menu.Item("drawHPDmg").GetValue<bool>()) return;
+
+            foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(ene => !ene.IsDead && ene.IsEnemy && ene.IsVisible))
+            {
+                hpi.unit = enemy;
+                double dmgTotal = getQDmg(enemy) * menu.Item("qCountsDraw").GetValue<Slider>().Value + getEDmg(enemy) * menu.Item("eCountsDraw").GetValue<Slider>().Value;
+
+                if (menu.Item("RCountsDraw").GetValue<bool>() && R.IsReady())
+                    dmgTotal += getRDmg(enemy);
+
+                hpi.drawDmg((float)dmgTotal, Color.Yellow);
+            }
+
+        }
+
         private static void DrawingOnOnDraw(EventArgs args)
         {
             if (debug)
@@ -264,20 +287,20 @@ namespace Cassiopeia
         static void AntiGapcloser_OnEnemyGapcloser(ActiveGapcloser gapcloser)
         {
             if (!menu.Item("gapcloserR").GetValue<bool>()) return;
-            
-            if (gapcloser.Sender.IsValidTarget(R.Range) && R.IsReady() && menu.Item(gapcloser.Sender.ChampionName + "gapcloser").GetValue<bool>())
+
+            String senderName = gapcloser.Sender.ChampionName;
+            if (senderName == "LeBlanc" || senderName == "MasterYi") return;
+
+            if (gapcloser.Sender.IsValidTarget(R.Range) && R.IsReady() && menu.Item(gapcloser.Sender.ChampionName + "gapcloser").GetValue<bool>() && gapcloser.Sender.IsFacing(player))
                 R.Cast(gapcloser.Sender.ServerPosition, menu.Item("PacketCast").GetValue<bool>());
         }
 
-        static void Interrupter_OnPossibleToInterrupt(Obj_AI_Base unit, InterruptableSpell spell)
+        static void Interrupter2_OnInterruptableTarget(Obj_AI_Hero sender, Interrupter2.InterruptableTargetEventArgs args)
         {
             if (!menu.Item("interruptR").GetValue<bool>()) return;
-            if (!(unit is Obj_AI_Hero)) return;
 
-            Obj_AI_Hero sender = unit as Obj_AI_Hero;
-
-            if (unit.IsValidTarget(R.Range) && spell.DangerLevel >= InterruptableDangerLevel.High && menu.Item(sender + "interrupt").GetValue<bool>())
-                R.CastIfHitchanceEquals(unit, unit.IsMoving ? HitChance.High : HitChance.Medium, menu.Item("PacketCast").GetValue<bool>());
+            if (sender.IsValidTarget(R.Range) && args.DangerLevel >= Interrupter2.DangerLevel.High && menu.Item(sender.ChampionName + "interrupt").GetValue<bool>() && sender.IsFacing(player))
+                R.CastIfHitchanceEquals(sender, HitChance.High, menu.Item("PacketCast").GetValue<bool>());
         }
 
         static void Orbwalking_BeforeAttack(Orbwalking.BeforeAttackEventArgs args)
@@ -417,9 +440,11 @@ namespace Cassiopeia
             {
                 if (menu.Item("comboR").GetValue<bool>())
                 {
-                    Obj_AI_Hero enemyR = GetEnemyList().Where(x => x.IsValidTarget(550f) && !checkYasuoWall(x.Position)).OrderBy(x => x.Health / getRDmg(x)).FirstOrDefault();
-                    if (enemyR != null)
+
+                    var enemyRList = GetEnemyList().Where(x => x.IsValidTarget(825) && !checkYasuoWall(x.Position) && Prediction.GetPrediction(x, R.Delay).UnitPosition.Distance(player.Position) <= 650f).OrderBy(x => x.Health / getRDmg(x)).ToList();
+                    if (enemyRList.Any())
                     {
+                        Obj_AI_Hero enemyR = enemyRList.FirstOrDefault();
                         PredictionOutput castPred = R.GetPrediction(enemyR, true, R.Range);
 
                         List<Obj_AI_Hero> enemiesHit = GetEnemyList().Where(x => R.WillHit(x.Position, castPred.CastPosition) && !checkYasuoWall(x.Position)).ToList();
@@ -436,10 +461,10 @@ namespace Cassiopeia
                                 ult = false;
                                 if (player.Level < 11)
                                 {
-                                    int multipleE = (facingEnemies == 1) ? 4 : 2;
+                                    int multipleE = (facingEnemies == 1) ? 5 : 3;
                                     int multipleQ = (facingEnemies == 1) ? 2 : 1;
                                     double procHealth = (getEDmg(enemyR) * multipleE + getQDmg(enemyR) * multipleQ + getRDmg(enemyR)) / enemyR.Health;
-                                    if (procHealth > 1 && procHealth < 1.5 && (enemyR.HasBuffOfType(BuffType.Poison) || Q.IsReady() || W.IsReady()) && (E.IsReady() || player.Spellbook.GetSpell(E.Slot).CooldownExpires < 1))
+                                    if (procHealth > 1 && procHealth < 2.5 && (enemyR.HasBuffOfType(BuffType.Poison) || Q.IsReady() || W.IsReady()) && (E.IsReady() || player.Spellbook.GetSpell(E.Slot).CooldownExpires < 1))
                                         ult = true;
                                 }
                             }
