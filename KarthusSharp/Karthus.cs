@@ -5,6 +5,8 @@ using LeagueSharp;
 using LeagueSharp.Common;
 using SharpDX;
 
+
+
 namespace KarthusSharp
 {
     /*
@@ -98,13 +100,13 @@ namespace KarthusSharp
             _spellR.SetSkillshot(3f, float.MaxValue, float.MaxValue, false, SkillshotType.SkillshotCircle);
 
             Drawing.OnDraw += Drawing_OnDraw;
-            Game.OnGameUpdate += Game_OnGameUpdate;
+            Game.OnUpdate += Game_OnUpdate;
             Orbwalking.BeforeAttack += Orbwalking_BeforeAttack;
 
             Game.PrintChat("<font color=\"#1eff00\">KarthusSharp by Beaving</font> - <font color=\"#00BFFF\">Loaded</font>");
         }
 
-        void Game_OnGameUpdate(EventArgs args)
+        void Game_OnUpdate(EventArgs args)
         {
             if (_menu.Item("ultKS").GetValue<bool>())
                 UltKs();
@@ -204,7 +206,7 @@ namespace KarthusSharp
                 if (target != null)
                 {
                     anyQTarget = true;
-					var prediction = _spellQ.GetPrediction(target);
+                    var prediction = _spellQ.GetPrediction(target);
 					if (prediction.Hitchance >= HitChance.VeryHigh)
                     CastQ(target);
                 }
