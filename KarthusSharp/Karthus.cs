@@ -206,7 +206,7 @@ namespace KarthusSharp
                 if (target != null)
                 {
                     anyQTarget = true;
-                    var prediction = _spellQ.GetPrediction(target);
+					var prediction = _spellQ.GetPrediction(target);
 					if (prediction.Hitchance >= HitChance.VeryHigh)
                     CastQ(target);
                 }

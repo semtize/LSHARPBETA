@@ -1,20 +1,4 @@
-﻿Skip to content
- This repository
-Explore
-Gist
-Blog
-Help
-@semtize semtize
- 
- Watch 9
-  Star 5
-  Fork 31
-Beaving/LeagueSharp
- branch: master  LeagueSharp/KarthusSharp/KarthusSharp.csproj
-@BeavingBeaving on Feb 19 Added notifications to BaseUlt
-1 contributor
-RawBlameHistory     79 lines (79 sloc)  3.46 kb
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -93,5 +77,3 @@ RawBlameHistory     79 lines (79 sloc)  3.46 kb
   </Target>
   -->
 </Project>
-Status API Training Shop Blog About
-© 2015 GitHub, Inc. Terms Privacy Security Contact
