@@ -132,7 +132,7 @@ namespace Chogath
                 var target = TargetSelector.GetSelectedTarget();
                 if (target != null && target.IsValidTarget())
                 { 
-                    var prediction = _spellQ.GetPrediction(target);
+                    var prediction = Q.GetPrediction(target);
 					if (prediction.Hitchance >= HitChance.VeryHigh)
 						castQ(target);
                 }
@@ -142,7 +142,7 @@ namespace Chogath
                 var target = TargetSelector.GetTarget(950, TargetSelector.DamageType.Magical);
                 if (target != null && target.IsValidTarget())
                 {
-                    var prediction = _spellQ.GetPrediction(target);
+                    var prediction = Q.GetPrediction(target);
 					if (prediction.Hitchance >= HitChance.VeryHigh)
 						castQ(target);
                 }
@@ -157,7 +157,7 @@ namespace Chogath
                 var target = TargetSelector.GetSelectedTarget();
                 if (target != null && target.IsValidTarget())
                 {
-                    var prediction = _spellQ.GetPrediction(target);
+                    var prediction = W.GetPrediction(target);
 					if (prediction.Hitchance >= HitChance.VeryHigh)
 						castW(target);
                 }
@@ -167,7 +167,7 @@ namespace Chogath
                 var target = TargetSelector.GetTarget(700, TargetSelector.DamageType.Magical);
                 if (target != null && target.IsValidTarget())
                 {
-                    var prediction = _spellQ.GetPrediction(target);
+                    var prediction = W.GetPrediction(target);
 					if (prediction.Hitchance >= HitChance.VeryHigh)
 						castW(target);
                 }
